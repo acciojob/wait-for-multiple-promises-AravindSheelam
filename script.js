@@ -1,52 +1,53 @@
-//your JS code here. If required.
-function delay(ms) {
-  return new Promise(resolve => setTimeout(resolve, ms));
+const output = document.getElementById("output");
+
+const createPromises = [
+  getRandom('Promise 1'),
+  getRandom('Promise 2'),
+  getRandom('Promise 3')
+];
+
+function randomTime(min, max) {
+  return Math.random() * (max - min) + min;
 }
 
-function populateTable(data) {
-  const table = document.getElementById('resultTable');
-  const loadingRow = document.getElementById('loadingRow');
-  table.removeChild(loadingRow);
-
-  data.forEach((item, index) => {
-    const newRow = table.insertRow();
-    const promiseCell = newRow.insertCell(0);
-    const timeCell = newRow.insertCell(1);
-
-    promiseCell.textContent = `Promise ${index + 1}`;
-    timeCell.textContent = `${item.toFixed(3)}`;
+function getRandom(solve) {
+  return new Promise((resolve) => {
+    const time = randomTime(1, 3) * 1000; // Convert to milliseconds
+    setTimeout(() => {
+      resolve({ promiseName: solve, timeTaken: time / 1000 }); // Resolve with an object containing promiseName and timeTaken
+    }, time);
   });
 }
 
-const promises = [];
+Promise.all(createPromises)
+  .then((results) => {
+    const totalTime = results.reduce((total, result) => total + result.timeTaken, 0);
 
-promises.push(
-  new Promise(resolve => {
-    const randomDelay = Math.random() * 2000 + 1000;
-    setTimeout(() => resolve(randomDelay / 1000), randomDelay);
+    output.innerHTML = "";
+    output.innerHTML = `
+      <tr>
+        <td>${results[0].promiseName}</td>
+        <td>${results[0].timeTaken.toFixed(3)}</td>
+      </tr>
+      <tr>
+        <td>${results[1].promiseName}</td>
+        <td>${results[1].timeTaken.toFixed(3)}</td>
+      </tr>
+      <tr>
+        <td>${results[2].promiseName}</td>
+        <td>${results[2].timeTaken.toFixed(3)}</td>
+      </tr>
+      <tr>
+        <td>Total</td>
+        <td>${totalTime.toFixed(3)}</td>
+      </tr>
+    `;
   })
-);
-
-promises.push(
-  new Promise(resolve => {
-    const randomDelay = Math.random() * 2000 + 1000;
-    setTimeout(() => resolve(randomDelay / 1000), randomDelay);
-  })
-);
-
-promises.push(
-  new Promise(resolve => {
-    const randomDelay = Math.random() * 2000 + 1000;
-    setTimeout(() => resolve(randomDelay / 1000), randomDelay);
-  })
-);
-
-Promise.all(promises)
-  .then(data => {
-    const total = data.reduce((sum, time) => sum + time, 0);
-    data.push(total);
-    populateTable(data);
-  })
-  .catch(error => {
-    console.error(error);
+  .catch((error) => {
+    console.error("Error:", error);
+    output.innerHTML = `
+      <tr>
+        <td colspan="2">Error occurred</td>
+      </tr>
+    `;
   });
