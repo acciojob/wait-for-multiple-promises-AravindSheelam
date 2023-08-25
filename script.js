@@ -1,53 +1,40 @@
-const output = document.getElementById("output");
-
-const createPromises = [
-  getRandom('Promise 1'),
-  getRandom('Promise 2'),
-  getRandom('Promise 3')
-];
-
-function randomTime(min, max) {
-  return Math.random() * (max - min) + min;
-}
-
-function getRandom(solve) {
-  return new Promise((resolve) => {
-    const time = randomTime(1, 3) * 1000; // Convert to milliseconds
+let a = new Promise((resolve)=>{
+	setTimeout(()=>{
+		resolve(2);
+	},2000);
+})
+let b = new Promise((resolve)=>{
+    setTimeout(()=>{
+        resolve(1)
+    },1000)
+});
+let c = new Promise((resolve)=>{
     setTimeout(() => {
-      resolve({ promiseName: solve, timeTaken: time / 1000 }); // Resolve with an object containing promiseName and timeTaken
-    }, time);
-  });
-}
+        resolve(3);
+    }, 3000);
+})
+let x = Promise.all([a,b,c]);
+const tbody = document.querySelector("tbody");
+// AssertionError: Timed out retrying after 4000ms: Expected to find element: `tr#loading`, but never found it.
 
-Promise.all(createPromises)
-  .then((results) => {
-    const totalTime = results.reduce((total, result) => total + result.timeTaken, 0);
-
-    output.innerHTML = "";
-    output.innerHTML = `
-      <tr>
-        <td>${results[0].promiseName}</td>
-        <td>${results[0].timeTaken.toFixed(3)}</td>
-      </tr>
-      <tr>
-        <td>${results[1].promiseName}</td>
-        <td>${results[1].timeTaken.toFixed(3)}</td>
-      </tr>
-      <tr>
-        <td>${results[2].promiseName}</td>
-        <td>${results[2].timeTaken.toFixed(3)}</td>
-      </tr>
-      <tr>
-        <td>Total</td>
-        <td>${totalTime.toFixed(3)}</td>
-      </tr>
-    `;
-  })
-  .catch((error) => {
-    console.error("Error:", error);
-    output.innerHTML = `
-      <tr>
-        <td colspan="2">Error occurred</td>
-      </tr>
-    `;
-  });
+tbody.innerHTML = `<tr id=loading>
+	     <td>Loading...</td>
+		  </tr>`
+x.then((arr)=>{
+	tbody.innerHTML = ""
+   let totaltime = 0;
+   for(let i = 0; i<arr.length; i++){
+    totaltime=Math.max(arr[i],totaltime);
+	const tr = document.createElement("tr");
+ 	tr.innerHTML = `<td>Promise ${i+1}</td>
+           <td>${arr[i]}</td>
+ 		`
+ 	tbody.appendChild(tr);
+   }
+   const tr = document.createElement("tr");
+ 	tr.innerHTML = `<td>Total</td>
+           <td>${totaltime}</td>
+ 		`
+ 	tbody.appendChild(tr);
+   //tbody.firstElementChild.remove();
+})
